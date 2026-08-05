@@ -94,12 +94,13 @@
   .stamp{width:90px;height:90px;border-radius:50%;border:3px solid var(--orange);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:6px auto 18px;transform:rotate(-6deg);}
   .stamp .n{font-family:'JetBrains Mono';font-weight:700;font-size:22px;color:var(--orange-dark);line-height:1;}
   .stamp .l{font-family:'Oswald';font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--orange-dark);margin-top:2px;}
-  .ticket{background:#fff;border:1px solid var(--border-soft);border-radius:8px;padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;position:relative;overflow:hidden;}
-  .ticket::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--orange);}
+  .ticket{background:#fff;border:1px solid var(--border-soft);border-radius:6px;padding:8px 12px 8px 14px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer;position:relative;overflow:hidden;}
+  .ticket::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--orange);}
   .ticket:hover{border-color:var(--orange);}
-  .ticket .date{font-family:'JetBrains Mono';font-weight:700;font-size:14.5px;}
-  .ticket .sites{font-size:12.5px;color:var(--steel);margin-top:3px;}
-  .ticket .hrs{font-family:'JetBrains Mono';font-weight:700;font-size:17px;color:var(--orange-dark);}
+  .ticket .left{display:flex;align-items:baseline;gap:9px;min-width:0;flex:1;}
+  .ticket .date{font-family:'JetBrains Mono';font-weight:700;font-size:12.5px;flex-shrink:0;}
+  .ticket .sites{font-size:12px;color:var(--steel);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ticket .hrs{font-family:'JetBrains Mono';font-weight:700;font-size:14px;color:var(--orange-dark);flex-shrink:0;}
   .empty-state{text-align:center;padding:40px 20px;color:var(--steel);}
   .empty-state .big{font-size:34px;margin-bottom:8px;}
 
@@ -135,7 +136,7 @@
    CONFIGURAZIONE — obbligatoria prima dell'uso
    Incolla qui l'URL del tuo Google Apps Script Web App (vedi ISTRUZIONI.md)
    ===================================================================== */
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwt54b5eERHXfopk22KBQ9NuHYpNkgzi6-BfUymbLkjqH5OUXnVD1v5CUebGGkqeIO5Uw/exec';
+const APPS_SCRIPT_URL = 'INCOLLA_QUI_IL_TUO_URL_APPS_SCRIPT';
 
 /* Credenziali di accesso alla pagina Amministrazione (modifica pure) */
 const ADMIN_USER = 'admin';
@@ -461,7 +462,11 @@ function wireSiteSelect(sel){
 
 /* ================= VIEW (VISUALIZZAZIONE) ================= */
 function renderView(){
-  const mine = S.entries.filter(e=>e.worker===S.worker).sort((a,b)=> b.date.localeCompare(a.date));
+  const mine = S.entries.filter(e=>e.worker===S.worker).sort((a,b)=>{
+    const d = b.date.localeCompare(a.date);
+    if(d !== 0) return d;
+    return String(b.updatedAt||'').localeCompare(String(a.updatedAt||''));
+  });
   const months = Array.from(new Set(mine.map(e=>monthKey(e.date))));
   const curMonth = monthKey(todayStr());
   if(!months.includes(curMonth)) months.unshift(curMonth);
@@ -498,9 +503,9 @@ function renderView(){
       </div>` :
       filtered.map(e=>`
       <div class="ticket" data-id="${e.id}">
-        <div>
-          <div class="date">${fmtDate(e.date)}</div>
-          <div class="sites">${escapeHtml(e.sites.map(s=>s.cantiere).join(', '))}</div>
+        <div class="left">
+          <span class="date">${fmtDate(e.date)}</span>
+          <span class="sites">${escapeHtml(e.sites.map(s=>s.cantiere).join(', '))}</span>
         </div>
         <div class="hrs">${fmtHrs(e.totalOre)} h</div>
       </div>`).join('')
